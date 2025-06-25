@@ -1,0 +1,502 @@
+{% extends "base.html" %}
+
+{% block title %}{{ chatroom.name }} - Supernono AI聊天机器人{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: 600px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 15px;
+        overflow: hidden;
+    }
+    
+    .chat-messages {
+        height: 480px;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f8f9fa;
+    }
+    
+    .chat-input-area {
+        background: white;
+        padding: 20px;
+        border-radius: 0 0 15px 15px;
+        border-top: 1px solid #e9ecef;
+    }
+    
+    .message {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: flex-start;
+    }
+    
+    .message.user {
+        flex-direction: row-reverse;
+    }
+    
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin: 0 10px;
+        flex-shrink: 0;
+        object-fit: cover;
+    }
+    
+    .message-content {
+        max-width: 70%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .message.user .message-content {
+        align-items: flex-end;
+    }
+    
+    .message.ai .message-content {
+        align-items: flex-start;
+    }
+    
+    .message-bubble {
+        padding: 12px 16px;
+        border-radius: 18px;
+        word-wrap: break-word;
+        position: relative;
+    }
+    
+    .message.user .message-bubble {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-bottom-right-radius: 5px;
+    }
+    
+    .message.ai .message-bubble {
+        background: white;
+        border: 2px solid #e9ecef;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        border-bottom-left-radius: 5px;
+    }
+    
+    .message-meta {
+        font-size: 0.75rem;
+        opacity: 0.7;
+        margin-top: 5px;
+        padding: 0 5px;
+    }
+    
+    .message.user .message-meta {
+        text-align: right;
+    }
+    
+    .message.ai .message-meta {
+        text-align: left;
+    }
+    
+    .ai-indicator {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 0.7rem;
+        margin-left: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-9">
+        <!-- 聊天室标题 -->
+        <div class="card mb-3">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h4 class="mb-1">
+                            <i class="fas fa-comments me-2"></i>{{ chatroom.name }}
+                        </h4>
+                        <p class="text-muted mb-0">{{ chatroom.description or '欢迎来到聊天室' }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary">{{ chatroom.get_user_count() }} 成员</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 聊天区域 -->
+        <div class="card">
+            <div class="chat-container">
+                <div class="chat-messages" id="chatMessages">
+                    {% for message in messages %}
+                    <div class="message {{ 'ai' if message.is_ai_message else 'user' }}">
+                        <img src="{{ url_for('static', filename=message.get_sender_avatar()) }}" 
+                             alt="{{ message.get_sender_name() }}" 
+                             class="message-avatar">
+                        <div class="message-content">
+                            <div class="message-bubble">
+                                {% if message.is_ai_message %}
+                                    <i class="fas fa-robot me-2 text-primary"></i>
+                                {% endif %}
+                                {{ message.content }}
+                            </div>
+                            <div class="message-meta">
+                                <strong>{{ message.get_sender_name() }}</strong>
+                                {% if message.is_ai_message %}
+                                    <span class="ai-indicator">AI</span>
+                                {% endif %}
+                                <span class="ms-2">{{ message.created_at.strftime('%H:%M') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- 消息输入区域 -->
+                <div class="chat-input-area">
+                    <form method="POST" action="{{ url_for('chat.send_message') }}" id="messageForm">
+                        <div class="row">
+                            <div class="col-9">
+                                <div class="input-group">
+                                    <input type="hidden" name="chatroom_id" value="{{ chatroom.id }}">
+                                    <img src="{{ url_for('static', filename=current_user.get_avatar_path()) }}" 
+                                         alt="我的头像" class="message-avatar me-2">
+                                    <input type="text" class="form-control" name="content" id="messageInput"
+                                           placeholder="输入消息..." required>
+                                    <button type="submit" class="btn btn-primary" id="sendBtn">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="use_ai" value="true" id="useAI">
+                                    <label class="form-check-label" for="useAI">
+                                        <i class="fas fa-robot me-1"></i>AI回答
+                                    </label>
+                                </div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-outline-warning btn-sm" id="clearAiHistory" 
+                                            title="清除AI对话历史">
+                                        <i class="fas fa-broom"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    
+                    <!-- AI状态指示器 -->
+                    <div id="aiStatus" class="mt-2" style="display: none;">
+                        <div class="alert alert-info alert-sm">
+                            <i class="fas fa-robot me-2"></i>
+                            <span id="aiStatusText">supernono正在思考...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 侧边栏 -->
+    <div class="col-lg-3">
+        <!-- 在线用户 -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-users me-2"></i>聊天室成员
+                </h6>
+            </div>
+            <div class="card-body">
+                {% for user in chatroom_users %}
+                <div class="d-flex align-items-center mb-3 chatroom-member" data-user-id="{{ user.id }}">
+                    <img src="{{ url_for('static', filename=user.get_avatar_path()) }}" 
+                         alt="{{ user.username }}" class="avatar me-3">
+                    <div>
+                        <h6 class="mb-1">{{ user.username }}</h6>
+                        <small class="user-status {{ user.get_online_status_class() }}">
+                            <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i>
+                            {{ user.get_online_status() }}
+                        </small>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- AI助手信息 -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-robot me-2"></i>AI助手
+                </h6>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename='img/supernono/bot.png') }}"
+                     alt="supernono" class="avatar mb-3">
+                <h6>supernono</h6>
+                <small class="text-muted">基于MindSpore 2.5.0</small>
+                <div class="mt-3">
+                    <span class="badge bg-success">
+                        <i class="fas fa-check-circle me-1"></i>运行中
+                    </span>
+                </div>
+                <div class="mt-2">
+                    <small class="text-info">
+                        <i class="fas fa-lightbulb me-1"></i>
+                        勾选"AI回答"获得智能回复
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 快捷操作 -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-tools me-2"></i>快捷操作
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('user.chatrooms') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>返回聊天室列表
+                    </a>
+                    <button class="btn btn-outline-primary btn-sm" onclick="scrollToBottom()">
+                        <i class="fas fa-arrow-down me-1"></i>滚动到底部
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    var chatroomId = {{ chatroom.id }};
+    var useAjax = true; // 启用AJAX模式
+    
+    // 自动滚动到底部
+    function scrollToBottom() {
+        var chatMessages = document.getElementById('chatMessages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    // 全局滚动函数
+    window.scrollToBottom = scrollToBottom;
+    
+    // 页面加载时滚动到底部
+    scrollToBottom();
+    
+    // 添加消息到聊天界面
+    function addMessage(message) {
+        var messageClass = message.is_ai_message ? 'ai' : 'user';
+        var messageHtml = `
+            <div class="message ${messageClass}">
+                <img src="{{ url_for('static', filename='') }}${message.sender_avatar}" 
+                     alt="${message.sender_name}" class="message-avatar">
+                <div class="message-content">
+                    <div class="message-bubble">
+                        ${message.is_ai_message ? '<i class="fas fa-robot me-2 text-primary"></i>' : ''}
+                        ${message.content}
+                    </div>
+                    <div class="message-meta">
+                        <strong>${message.sender_name}</strong>
+                        ${message.is_ai_message ? '<span class="ai-indicator">AI</span>' : ''}
+                        <span class="ms-2">${new Date(message.created_at).toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'})}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        $('#chatMessages').append(messageHtml);
+        scrollToBottom();
+    }
+    
+    // 显示AI状态
+    function showAiStatus(text) {
+        $('#aiStatusText').text(text);
+        $('#aiStatus').show();
+    }
+    
+    // 隐藏AI状态
+    function hideAiStatus() {
+        $('#aiStatus').hide();
+    }
+    
+    // AJAX发送消息
+    function sendMessageAjax(content, useAi) {
+        $.ajax({
+            url: '{{ url_for("chat.send_message_ajax") }}',
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                chatroom_id: chatroomId,
+                content: content,
+                use_ai: useAi
+            }),
+            success: function(response) {
+                if (response.success) {
+                    // 添加用户消息
+                    addMessage(response.user_message);
+                    
+                    // 如果有AI回复
+                    if (response.ai_message) {
+                        setTimeout(function() {
+                            addMessage(response.ai_message);
+                            hideAiStatus();
+                            if (response.message) {
+                                showToast('success', response.message);
+                            }
+                        }, 1000); // 延迟1秒显示AI回复，增加真实感
+                    } else {
+                        hideAiStatus();
+                    }
+                    
+                    // 显示AI错误（如果有）
+                    if (response.ai_error) {
+                        hideAiStatus();
+                        showToast('warning', response.ai_error);
+                    }
+                } else {
+                    hideAiStatus();
+                    showToast('error', response.message || '发送失败');
+                }
+            },
+            error: function() {
+                hideAiStatus();
+                showToast('error', '网络错误，发送失败');
+            }
+        });
+    }
+    
+    // 显示提示消息
+    function showToast(type, message) {
+        var toastClass = type === 'success' ? 'alert-success' : 
+                        type === 'warning' ? 'alert-warning' : 'alert-danger';
+        var toast = `
+            <div class="alert ${toastClass} alert-dismissible fade show position-fixed" 
+                 style="top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        $('body').append(toast);
+        
+        // 3秒后自动消失
+        setTimeout(function() {
+            $('.alert').alert('close');
+        }, 3000);
+    }
+    
+    // 表单提交处理
+    $('#messageForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        var content = $('#messageInput').val().trim();
+        var useAi = $('#useAI').is(':checked');
+        
+        if (!content) {
+            showToast('warning', '请输入消息内容');
+            return;
+        }
+        
+        // 禁用发送按钮
+        $('#sendBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+        $('#messageInput').prop('disabled', true);
+        
+        if (useAi) {
+            showAiStatus('supernono正在思考...');
+        }
+        
+        if (useAjax) {
+            // 使用AJAX发送
+            sendMessageAjax(content, useAi);
+        } else {
+            // 使用传统表单提交
+            this.submit();
+        }
+        
+        // 清空输入框
+        $('#messageInput').val('');
+        
+        // 重新启用控件
+        setTimeout(function() {
+            $('#sendBtn').prop('disabled', false).html('<i class="fas fa-paper-plane"></i>');
+            $('#messageInput').prop('disabled', false).focus();
+        }, 1000);
+    });
+    
+    // AI选项提示
+    $('#useAI').change(function() {
+        if ($(this).is(':checked')) {
+            $('#messageInput').attr('placeholder', '输入消息，supernono将为您回答...');
+        } else {
+            $('#messageInput').attr('placeholder', '输入消息...');
+        }
+    });
+    
+    // 清除AI历史
+    $('#clearAiHistory').click(function() {
+        if (confirm('确定要清除与supernono的对话历史吗？')) {
+            $.ajax({
+                url: '{{ url_for("chat.clear_ai_history", user_id=current_user.id) }}',
+                method: 'GET',
+                success: function(response) {
+                    if (response.success) {
+                        showToast('success', response.message);
+                    } else {
+                        showToast('error', response.message);
+                    }
+                },
+                error: function() {
+                    showToast('error', '清除失败');
+                }
+            });
+        }
+    });
+    
+    // 回车发送消息
+    $('#messageInput').keypress(function(e) {
+        if (e.which === 13) { // Enter键
+            $('#messageForm').submit();
+        }
+    });
+    
+    // 获取AI信息并显示在控制台
+    $.get('{{ url_for("chat.ai_info") }}', function(response) {
+        if (response.success) {
+            console.log('supernono AI信息:', response.bot_info);
+        }
+    });
+    
+    // 更新用户在线状态
+    function updateUsersStatus() {
+        $.get('{{ url_for("chat.users_status", chatroom_id=chatroom.id) }}', function(response) {
+            if (response.success) {
+                // 更新每个用户的在线状态
+                response.users.forEach(function(user) {
+                    var userElement = $(`.chatroom-member[data-user-id="${user.id}"]`);
+                    if (userElement.length) {
+                        var statusElement = userElement.find('.user-status');
+                        statusElement.removeClass('text-success text-muted')
+                                   .addClass(user.online_status_class)
+                                   .html(`<i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i>${user.online_status}`);
+                    }
+                });
+            }
+        }).fail(function() {
+            console.log('获取用户状态失败');
+        });
+    }
+    
+    // 每30秒更新一次在线状态
+    setInterval(updateUsersStatus, 30000);
+    
+    // 页面获得焦点时也更新状态
+    $(window).focus(function() {
+        updateUsersStatus();
+    });
+});
+</script>
+{% endblock %} 

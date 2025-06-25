@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}我的聊天室 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>
+            <i class="fas fa-comments me-2"></i>我的聊天室
+            <small class="text-muted">- 共 {{ chatrooms|length }} 个</small>
+        </h1>
+    </div>
+</div>
+
+{% if chatrooms %}
+    <div class="row">
+        {% for chatroom in chatrooms %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">
+                        <i class="fas fa-hashtag me-2"></i>{{ chatroom.name }}
+                    </h5>
+                    <p class="card-text text-muted flex-grow-1">
+                        {{ chatroom.description or '这个聊天室还没有描述...' }}
+                    </p>
+                    
+                    <div class="row text-center mb-3">
+                        <div class="col-6">
+                            <div class="border-end">
+                                <h6 class="text-primary mb-1">{{ chatroom.get_user_count() }}</h6>
+                                <small class="text-muted">成员</small>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <h6 class="text-info mb-1">{{ chatroom.get_message_count() }}</h6>
+                            <small class="text-muted">消息</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-auto">
+                        {% if chatroom.get_message_count() > 0 %}
+                            <div class="mb-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    最后活动：{{ chatroom.updated_at.strftime('%m-%d %H:%M') if chatroom.updated_at else '暂无' }}
+                                </small>
+                            </div>
+                        {% endif %}
+                        
+                        <a href="{{ url_for('chat.chatroom', chatroom_id=chatroom.id) }}" 
+                           class="btn btn-primary w-100">
+                            <i class="fas fa-sign-in-alt me-1"></i>进入聊天室
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="row">
+        <div class="col">
+            <div class="text-center py-5">
+                <i class="fas fa-comments fa-4x text-muted mb-4"></i>
+                <h3 class="text-muted">还没有加入任何聊天室</h3>
+                <p class="text-muted mb-4">请联系管理员将您添加到聊天室中，然后就可以开始愉快的聊天了！</p>
+                <a href="{{ url_for('user.dashboard') }}" class="btn btn-primary">
+                    <i class="fas fa-arrow-left me-1"></i>返回仪表板
+                </a>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- AI助手提示 -->
+<div class="row mt-4">
+    <div class="col">
+        <div class="card bg-light">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <img src="{{ url_for('static', filename='img/supernono/bot.png') }}" 
+                             alt="Supernono" class="avatar">
+                    </div>
+                    <div class="col">
+                        <h6 class="mb-1">
+                            <i class="fas fa-robot me-2"></i>Supernono AI助手
+                        </h6>
+                        <p class="mb-0 text-muted">
+                            在任何聊天室中，您都可以勾选"AI回答"来获得智能回复！
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 卡片悬停效果
+    $('.card').hover(
+        function() {
+            $(this).addClass('shadow-lg').css('transform', 'translateY(-5px)');
+        },
+        function() {
+            $(this).removeClass('shadow-lg').css('transform', 'translateY(0)');
+        }
+    );
+});
+</script>
+{% endblock %} 

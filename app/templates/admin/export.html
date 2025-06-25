@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}导出数据 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>
+            <i class="fas fa-download me-2"></i>导出聊天记录
+        </h1>
+        <p class="text-muted">选择要导出的聊天室，系统将生成txt格式的聊天记录文件。</p>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if chatrooms %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>聊天室名称</th>
+                            <th>描述</th>
+                            <th>成员数量</th>
+                            <th>消息数量</th>
+                            <th>最后活动时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chatroom in chatrooms %}
+                        <tr>
+                            <td>
+                                <strong>{{ chatroom.name }}</strong>
+                            </td>
+                            <td>{{ chatroom.description or '无描述' }}</td>
+                            <td>
+                                <span class="badge bg-primary">{{ chatroom.get_user_count() }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ chatroom.get_message_count() }}</span>
+                            </td>
+                            <td>{{ chatroom.updated_at.strftime('%Y-%m-%d %H:%M') if chatroom.updated_at else '暂无' }}</td>
+                            <td>
+                                {% if chatroom.get_message_count() > 0 %}
+                                    <a href="{{ url_for('admin.export_chatroom', chatroom_id=chatroom.id) }}" 
+                                       class="btn btn-sm btn-success">
+                                        <i class="fas fa-download me-1"></i>导出
+                                    </a>
+                                {% else %}
+                                    <span class="text-muted">无消息</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-comments fa-3x mb-3"></i>
+                <h5>暂无聊天室</h5>
+                <p>还没有聊天室数据可以导出。</p>
+                <a href="{{ url_for('admin.add_chatroom') }}" class="btn btn-primary">
+                    <i class="fas fa-plus-circle me-1"></i>创建聊天室
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 导出说明 -->
+<div class="row mt-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>导出说明
+                </h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>导出文件为txt格式，包含完整的聊天历史记录</li>
+                    <li>文件名格式：聊天室名称_导出时间.txt</li>
+                    <li>包含发送者、时间、消息内容等详细信息</li>
+                    <li>AI消息会特别标注，便于区分</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,159 @@
+{% extends "admin/base.html" %}
+
+{% block title %}编辑个人信息 - Supernono AI聊天机器人{% endblock %}
+
+{% block admin_content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-edit me-2"></i>编辑个人信息
+                </h5>
+                <a href="{{ url_for('admin.profile') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>返回
+                </a>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.edit_profile') }}">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">
+                                    <i class="fas fa-user me-2"></i>用户名
+                                </label>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       value="{{ current_user.username }}" required
+                                       placeholder="请输入用户名">
+                                <div class="form-text">用户名将用于登录系统</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">
+                                    <i class="fas fa-lock me-2"></i>新密码
+                                </label>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="留空则不修改密码">
+                                <div class="form-text">至少6个字符，留空则不修改</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-user-tag me-2"></i>角色
+                                </label>
+                                <div class="form-control-plaintext">
+                                    <span class="badge bg-primary">系统管理员</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-calendar me-2"></i>注册时间
+                                </label>
+                                <div class="form-control-plaintext">
+                                    {{ current_user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <a href="{{ url_for('admin.profile') }}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>取消
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>保存更改
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 安全提示 -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <div class="alert alert-info mb-0" role="alert">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>安全提示：</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>修改用户名后需要重新登录</li>
+                        <li>密码建议包含字母、数字和特殊字符</li>
+                        <li>定期更换密码以确保账户安全</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 表单验证
+    $('form').on('submit', function(e) {
+        var username = $('#username').val().trim();
+        var password = $('#password').val();
+        
+        if (username.length < 3) {
+            e.preventDefault();
+            alert('用户名至少需要3个字符');
+            $('#username').focus();
+            return false;
+        }
+        
+        if (password && password.length < 6) {
+            e.preventDefault();
+            alert('密码至少需要6个字符');
+            $('#password').focus();
+            return false;
+        }
+        
+        // 提交确认
+        if (!confirm('确定要保存这些更改吗？')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+    
+    // 实时验证用户名
+    $('#username').on('input', function() {
+        var username = $(this).val().trim();
+        var feedback = $(this).siblings('.form-text');
+        
+        if (username.length < 3) {
+            $(this).removeClass('is-valid').addClass('is-invalid');
+            feedback.text('用户名至少需要3个字符').addClass('text-danger');
+        } else {
+            $(this).removeClass('is-invalid').addClass('is-valid');
+            feedback.text('用户名将用于登录系统').removeClass('text-danger');
+        }
+    });
+    
+    // 实时验证密码
+    $('#password').on('input', function() {
+        var password = $(this).val();
+        var feedback = $(this).siblings('.form-text');
+        
+        if (password && password.length < 6) {
+            $(this).removeClass('is-valid').addClass('is-invalid');
+            feedback.text('密码至少需要6个字符').addClass('text-danger');
+        } else if (password) {
+            $(this).removeClass('is-invalid').addClass('is-valid');
+            feedback.text('密码强度良好').removeClass('text-danger').addClass('text-success');
+        } else {
+            $(this).removeClass('is-invalid is-valid');
+            feedback.text('至少6个字符，留空则不修改').removeClass('text-danger text-success');
+        }
+    });
+});
+</script>
+{% endblock %} 

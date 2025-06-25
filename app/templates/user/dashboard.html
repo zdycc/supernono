@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}用户仪表板 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>
+            <i class="fas fa-dashboard me-2"></i>我的仪表板
+            <small class="text-muted">- 欢迎，{{ current_user.username }}</small>
+        </h1>
+    </div>
+</div>
+
+<!-- 用户统计 -->
+<div class="row mb-4">
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="stats-card">
+            <div class="number">{{ total_chatrooms }}</div>
+            <div>
+                <i class="fas fa-comments me-2"></i>参与的聊天室
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="stats-card">
+            <div class="number">{{ total_messages }}</div>
+            <div>
+                <i class="fas fa-comment me-2"></i>发送的消息
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4 col-md-6 mb-3">
+        <div class="stats-card">
+            <div class="number">{{ user.created_at.strftime('%Y-%m-%d') }}</div>
+            <div>
+                <i class="fas fa-calendar me-2"></i>注册时间
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 我的聊天室 -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>我的聊天室
+                </h5>
+                <a href="{{ url_for('user.chatrooms') }}" class="btn btn-sm btn-primary">
+                    查看全部
+                </a>
+            </div>
+            <div class="card-body">
+                {% if user_chatrooms %}
+                    <div class="row">
+                        {% for chatroom in user_chatrooms[:6] %}
+                        <div class="col-md-6 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title">{{ chatroom.name }}</h6>
+                                    <p class="card-text text-muted small">
+                                        {{ chatroom.description or '暂无描述' }}
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="fas fa-users me-1"></i>
+                                            {{ chatroom.get_user_count() }} 成员
+                                        </small>
+                                        <a href="{{ url_for('chat.chatroom', chatroom_id=chatroom.id) }}" 
+                                           class="btn btn-sm btn-primary">
+                                            进入聊天
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-comments fa-3x mb-3"></i>
+                        <h5>暂无聊天室</h5>
+                        <p>您还没有加入任何聊天室，请联系管理员添加。</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- 个人信息卡片 -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>个人信息
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename=user.get_avatar_path()) }}" alt="头像" class="avatar mb-3" style="width: 80px; height: 80px; object-fit: cover;">
+                <h5>{{ user.username }}</h5>
+                <p class="text-muted">普通用户</p>
+                <a href="{{ url_for('user.profile') }}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-edit me-1"></i>编辑资料
+                </a>
+            </div>
+        </div>
+        
+        <!-- AI助手信息 -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-robot me-2"></i>AI助手
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename='img/supernono/bot.png') }}" alt="Supernono" class="avatar mb-3" style="width: 60px; height: 60px;">
+                <h6>Supernono</h6>
+                <p class="text-muted small">基于MindSpore的智能助手</p>
+                <div class="bg-light p-3 rounded">
+                    <small class="text-muted">
+                        <i class="fas fa-lightbulb me-1"></i>
+                        在聊天时选择"AI回答"，即可获得智能回复
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 添加一些交互效果
+    $('.card').hover(
+        function() {
+            $(this).addClass('shadow-lg');
+        },
+        function() {
+            $(this).removeClass('shadow-lg');
+        }
+    );
+});
+</script>
+{% endblock %} 

@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+
+{% block title %}管理员仪表板 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <h1>
+            <i class="fas fa-dashboard me-2"></i>管理员仪表板
+            <small class="text-muted">- 欢迎回来，{{ current_user.username }}</small>
+        </h1>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <div class="number">{{ total_users }}</div>
+            <div>
+                <i class="fas fa-users me-2"></i>普通用户
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <div class="number">{{ total_admins }}</div>
+            <div>
+                <i class="fas fa-user-shield me-2"></i>管理员
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <div class="number">{{ total_chatrooms }}</div>
+            <div>
+                <i class="fas fa-comments me-2"></i>聊天室
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="stats-card">
+            <div class="number">{{ total_messages }}</div>
+            <div>
+                <i class="fas fa-comment me-2"></i>消息总数
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 快捷操作 -->
+<div class="row mb-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>快捷操作
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{{ url_for('admin.add_user') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-user-plus d-block mb-2" style="font-size: 1.5rem;"></i>
+                            添加用户
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{{ url_for('admin.add_chatroom') }}" class="btn btn-outline-success w-100">
+                            <i class="fas fa-plus-circle d-block mb-2" style="font-size: 1.5rem;"></i>
+                            创建聊天室
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{{ url_for('admin.manage_users') }}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-users-cog d-block mb-2" style="font-size: 1.5rem;"></i>
+                            用户管理
+                        </a>
+                    </div>
+                    <div class="col-lg-3 col-md-6 mb-3">
+                        <a href="{{ url_for('admin.export_page') }}" class="btn btn-outline-warning w-100">
+                            <i class="fas fa-download d-block mb-2" style="font-size: 1.5rem;"></i>
+                            导出数据
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 最近用户和活跃聊天室 -->
+<div class="row">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-clock me-2"></i>最近注册用户
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if recent_users %}
+                    <div class="list-group list-group-flush">
+                        {% for user in recent_users %}
+                        <div class="list-group-item d-flex align-items-center">
+                            <img src="{{ url_for('static', filename=user.get_avatar_path()) }}" alt="头像" class="avatar me-3">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ user.username }}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ user.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </small>
+                            </div>
+                            <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-user-slash fa-3x mb-3"></i>
+                        <p>暂无用户</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-fire me-2"></i>活跃聊天室
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if active_chatrooms %}
+                    <div class="list-group list-group-flush">
+                        {% for chatroom in active_chatrooms %}
+                        <div class="list-group-item d-flex align-items-center">
+                            <div class="flex-grow-1">
+                                <h6 class="mb-1">{{ chatroom.name }}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-users me-1"></i>
+                                    {{ chatroom.get_user_count() }} 成员
+                                    <span class="ms-2">
+                                        <i class="fas fa-comments me-1"></i>
+                                        {{ chatroom.get_message_count() }} 消息
+                                    </span>
+                                </small>
+                            </div>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('admin.manage_chatroom_users', chatroom_id=chatroom.id) }}" 
+                                   class="btn btn-outline-primary">
+                                    <i class="fas fa-users"></i>
+                                </a>
+                                <a href="{{ url_for('admin.edit_chatroom', chatroom_id=chatroom.id) }}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-comments fa-3x mb-3"></i>
+                        <p>暂无聊天室</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 系统信息 -->
+<div class="row mt-4">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>系统信息
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>AI机器人状态</h6>
+                        <p class="text-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Supernono (基于MindSpore 2.5.0) - 运行正常
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>数据库状态</h6>
+                        <p class="text-success">
+                            <i class="fas fa-database me-2"></i>
+                            MySQL - 连接正常
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 定时刷新统计数据（可选）
+    setInterval(function() {
+        // 这里可以添加AJAX请求来更新统计数据
+        // 暂时不实现，避免过度复杂化
+    }, 30000); // 30秒
+});
+</script>
+{% endblock %} 

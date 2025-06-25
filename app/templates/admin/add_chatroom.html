@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}创建聊天室 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-6 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-plus-circle me-2"></i>创建新聊天室
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.add_chatroom') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-comments me-2"></i>聊天室名称
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" required 
+                               placeholder="请输入聊天室名称">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-info-circle me-2"></i>描述
+                        </label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                  placeholder="请输入聊天室描述（可选）"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.manage_chatrooms') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>返回
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>创建聊天室
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

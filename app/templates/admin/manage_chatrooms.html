@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}聊天室管理 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-comments me-2"></i>聊天室管理
+            </h1>
+            <a href="{{ url_for('admin.add_chatroom') }}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-1"></i>创建聊天室
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if chatrooms %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>名称</th>
+                            <th>描述</th>
+                            <th>成员数量</th>
+                            <th>消息数量</th>
+                            <th>创建时间</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for chatroom in chatrooms %}
+                        <tr>
+                            <td>{{ chatroom.id }}</td>
+                            <td>{{ chatroom.name }}</td>
+                            <td>{{ chatroom.description or '无描述' }}</td>
+                            <td>
+                                <span class="badge bg-primary">{{ chatroom.get_user_count() }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ chatroom.get_message_count() }}</span>
+                            </td>
+                            <td>{{ chatroom.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('admin.manage_chatroom_users', chatroom_id=chatroom.id) }}" 
+                                       class="btn btn-outline-success" title="管理成员">
+                                        <i class="fas fa-users"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.export_chatroom', chatroom_id=chatroom.id) }}" 
+                                       class="btn btn-outline-info" title="导出记录">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.edit_chatroom', chatroom_id=chatroom.id) }}" 
+                                       class="btn btn-outline-primary" title="编辑">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form method="POST" action="{{ url_for('admin.clear_chatroom_messages', chatroom_id=chatroom.id) }}" 
+                                          style="display: inline;" 
+                                          onsubmit="return confirm('确定要清空聊天室 {{ chatroom.name }} 的所有对话吗？此操作不可恢复！')">
+                                        <button type="submit" class="btn btn-outline-warning btn-sm" title="清空对话">
+                                            <i class="fas fa-broom"></i>
+                                        </button>
+                                    </form>
+                                    <a href="{{ url_for('admin.delete_chatroom', chatroom_id=chatroom.id) }}" 
+                                       class="btn btn-outline-danger" title="删除聊天室"
+                                       onclick="return confirm('确定要删除聊天室 {{ chatroom.name }} 吗？')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-comments fa-3x mb-3"></i>
+                <h5>暂无聊天室</h5>
+                <p>点击上方"创建聊天室"按钮创建第一个聊天室。</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

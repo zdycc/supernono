@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}管理聊天室成员 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-users me-2"></i>管理聊天室成员：{{ chatroom.name }}
+            </h1>
+            <a href="{{ url_for('admin.manage_chatrooms') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left me-1"></i>返回聊天室管理
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 当前成员 -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-check-circle me-2"></i>当前成员
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if chatroom_users %}
+                    <div class="list-group">
+                        {% for user in chatroom_users %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename=user.get_avatar_path()) }}" alt="头像" class="avatar me-3">
+                                <div>
+                                    <h6 class="mb-1">{{ user.username }}</h6>
+                                    <small class="text-muted">ID: {{ user.id }}</small>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('admin.remove_user_from_chatroom', chatroom_id=chatroom.id, user_id=user.id) }}" 
+                               class="btn btn-sm btn-outline-danger"
+                               onclick="return confirm('确定要移除用户 {{ user.username }} 吗？')">
+                                <i class="fas fa-times"></i> 移除
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-user-slash fa-2x mb-3"></i>
+                        <p>该聊天室暂无成员</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- 所有用户 -->
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>添加成员
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if all_users %}
+                    <div class="list-group">
+                        {% for user in all_users %}
+                        {% if user not in chatroom_users %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <img src="{{ url_for('static', filename=user.get_avatar_path()) }}" alt="头像" class="avatar me-3">
+                                <div>
+                                    <h6 class="mb-1">{{ user.username }}</h6>
+                                    <small class="text-muted">ID: {{ user.id }}</small>
+                                </div>
+                            </div>
+                            <a href="{{ url_for('admin.add_user_to_chatroom', chatroom_id=chatroom.id, user_id=user.id) }}" 
+                               class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-plus"></i> 添加
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-users fa-2x mb-3"></i>
+                        <p>暂无可添加的用户</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

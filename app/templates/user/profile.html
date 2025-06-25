@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}个人信息 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>个人信息
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <img src="{{ url_for('static', filename=user.get_avatar_path()) }}" alt="头像" class="avatar mb-3" style="width: 120px; height: 120px; object-fit: cover;">
+                        <h5>{{ user.username }}</h5>
+                        <p class="text-muted">普通用户</p>
+                    </div>
+                    <div class="col-md-8">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="30%">用户ID：</th>
+                                <td>{{ user.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>用户名：</th>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <th>注册时间：</th>
+                                <td>{{ user.created_at.strftime('%Y年%m月%d日 %H:%M') }}</td>
+                            </tr>
+                            <tr>
+                                <th>参与聊天室：</th>
+                                <td>
+                                    <span class="badge bg-primary">{{ user.get_chatroom_count() }} 个</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>头像状态：</th>
+                                <td>
+                                    {% if user.avatar %}
+                                        <span class="text-success">
+                                            <i class="fas fa-check-circle me-1"></i>已上传
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">
+                                            <i class="fas fa-times-circle me-1"></i>使用默认头像
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <a href="{{ url_for('user.edit_profile') }}" class="btn btn-primary me-2">
+                        <i class="fas fa-edit me-1"></i>编辑资料
+                    </a>
+                    <a href="{{ url_for('user.dashboard') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>返回仪表板
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- 头像上传 -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-image me-2"></i>更换头像
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('user.upload_avatar') }}" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input type="file" class="form-control" name="avatar" accept="image/*" required>
+                        <small class="form-text text-muted">支持 JPG、PNG、GIF 格式</small>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="fas fa-upload me-1"></i>上传头像
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 快捷操作 -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-bolt me-2"></i>快捷操作
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('user.chatrooms') }}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-comments me-1"></i>我的聊天室
+                    </a>
+                    <a href="{{ url_for('user.edit_profile') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-cog me-1"></i>账户设置
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

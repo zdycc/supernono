@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}登录 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6 col-md-8">
+        <div class="card">
+            <div class="card-body p-5">
+                <div class="text-center mb-4">
+                    <img src="{{ url_for('static', filename='img/supernono/bot.png') }}" alt="Supernono" class="avatar mb-3" style="width: 80px; height: 80px;">
+                    <h2 class="h3 mb-3">欢迎来到Supernono</h2>
+                    <p class="text-muted">基于MindSpore的智能团队协作助手</p>
+                </div>
+
+                <!-- 安全提示 -->
+                <div class="alert alert-info" role="alert">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    <strong>智能登录：</strong>系统将自动识别您的身份（管理员/用户），无需手动选择。
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="fas fa-user me-2"></i>用户名
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" required 
+                               placeholder="请输入用户名" autocomplete="username">
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label">
+                            <i class="fas fa-lock me-2"></i>密码
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" required 
+                               placeholder="请输入密码" autocomplete="current-password">
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>智能登录
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        如需注册账户，请联系管理员
+                    </small>
+                </div>
+
+                <!-- 演示账户信息 -->
+                <div class="mt-4 p-3" style="background-color: #f8f9fa; border-radius: 10px;">
+                    <h6 class="text-center mb-3">
+                        <i class="fas fa-question-circle me-2"></i>演示账户
+                    </h6>
+                    <div class="row">
+                        <div class="col-6">
+                            <small class="text-muted">
+                                <strong>管理员：</strong><br>
+                                用户名：admin<br>
+                                密码：admin123
+                            </small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">
+                                <strong>普通用户：</strong><br>
+                                需要管理员创建
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统智能特性 -->
+                <div class="mt-3 p-2 bg-light rounded">
+                    <small class="text-muted">
+                        <i class="fas fa-brain me-1"></i>
+                        <strong>智能登录特性：</strong>
+                        <ul class="mb-0 mt-2">
+                            <li>自动识别管理员和用户身份</li>
+                            <li>安全的身份验证机制</li>
+                            <li>智能跳转到对应页面</li>
+                        </ul>
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 系统特性介绍 -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="fas fa-robot fa-2x text-primary mb-2"></i>
+                    <h6>AI智能助手</h6>
+                    <small class="text-muted">基于MindSpore的智能对话</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="fas fa-users fa-2x text-success mb-2"></i>
+                    <h6>团队协作</h6>
+                    <small class="text-muted">多人聊天室实时交流</small>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="text-center">
+                    <i class="fas fa-user-cog fa-2x text-warning mb-2"></i>
+                    <h6>智能管理</h6>
+                    <small class="text-muted">自动识别权限级别</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 表单提交验证
+    $('form').on('submit', function(e) {
+        var username = $('#username').val().trim();
+        var password = $('#password').val().trim();
+        
+        if (username === '' || password === '') {
+            e.preventDefault();
+            alert('请填写完整的登录信息');
+            return false;
+        }
+        
+        // 显示登录处理提示
+        $(this).find('button[type="submit"]').html('<i class="fas fa-spinner fa-spin me-2"></i>识别身份中...');
+    });
+    
+    // 页面加载时显示智能登录提示
+    setTimeout(function() {
+        console.log('🧠 智能登录系统已启用');
+    }, 1000);
+});
+</script>
+{% endblock %} 

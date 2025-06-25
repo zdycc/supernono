@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}用户管理 - Supernono AI聊天机器人{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>
+                <i class="fas fa-users me-2"></i>用户管理
+            </h1>
+            <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
+                <i class="fas fa-user-plus me-1"></i>添加用户
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if users %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>头像</th>
+                            <th>用户名</th>
+                            <th>注册时间</th>
+                            <th>聊天室数量</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user.id }}</td>
+                            <td>
+                                <img src="{{ url_for('static', filename=user.get_avatar_path()) }}" alt="头像" class="avatar">
+                            </td>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ user.chatrooms.count() }}</span>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ url_for('admin.delete_user', user_id=user.id) }}" 
+                                       class="btn btn-outline-danger"
+                                       onclick="return confirm('确定要删除用户 {{ user.username }} 吗？')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center text-muted py-5">
+                <i class="fas fa-users fa-3x mb-3"></i>
+                <h5>暂无用户</h5>
+                <p>点击上方"添加用户"按钮创建第一个用户。</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %} 

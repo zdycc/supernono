@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+
+{% block extra_css %}
+<style>
+    .admin-sidebar {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        min-height: calc(100vh - 76px);
+        padding: 20px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .admin-sidebar .nav-link {
+        color: rgba(255, 255, 255, 0.8);
+        border-radius: 10px;
+        margin-bottom: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-sidebar .nav-link:hover,
+    .admin-sidebar .nav-link.active {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+    
+    .admin-content {
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    .admin-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 15px 15px 0 0;
+        margin: -30px -30px 20px -30px;
+    }
+    
+    .admin-stats-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .admin-stats-card .number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .admin-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        border-radius: 25px;
+        padding: 10px 25px;
+        transition: all 0.3s ease;
+    }
+    
+    .admin-btn:hover {
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- 侧边栏 -->
+        <div class="col-lg-2 col-md-3">
+            <div class="admin-sidebar">
+                <div class="text-center mb-4">
+                    <img src="{{ url_for('static', filename=current_user.get_avatar_path()) }}" 
+                         alt="管理员头像" class="avatar-lg rounded-circle mb-2" 
+                         style="width: 80px; height: 80px; object-fit: cover;">
+                    <h6>{{ current_user.username }}</h6>
+                    <small>系统管理员</small>
+                </div>
+                
+                <nav class="nav flex-column">
+                    <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" 
+                       href="{{ url_for('admin.dashboard') }}">
+                        <i class="fas fa-dashboard me-2"></i>仪表板
+                    </a>
+                    <a class="nav-link {% if 'admin' in request.endpoint and 'manage_admins' in request.endpoint %}active{% endif %}" 
+                       href="{{ url_for('admin.manage_admins') }}">
+                        <i class="fas fa-user-shield me-2"></i>管理员管理
+                    </a>
+                    <a class="nav-link {% if 'user' in request.endpoint and 'manage_users' in request.endpoint %}active{% endif %}" 
+                       href="{{ url_for('admin.manage_users') }}">
+                        <i class="fas fa-users me-2"></i>用户管理
+                    </a>
+                    <a class="nav-link {% if 'chatroom' in request.endpoint %}active{% endif %}" 
+                       href="{{ url_for('admin.manage_chatrooms') }}">
+                        <i class="fas fa-comments me-2"></i>聊天室管理
+                    </a>
+                    <a class="nav-link {% if 'export' in request.endpoint %}active{% endif %}" 
+                       href="{{ url_for('admin.export_page') }}">
+                        <i class="fas fa-download me-2"></i>数据导出
+                    </a>
+                    <a class="nav-link {% if 'profile' in request.endpoint %}active{% endif %}" 
+                       href="{{ url_for('admin.profile') }}">
+                        <i class="fas fa-user-cog me-2"></i>个人信息
+                    </a>
+                    
+                    <hr class="my-3" style="border-color: rgba(255,255,255,0.3);">
+                    
+                    <a class="nav-link" href="{{ url_for('auth.logout') }}">
+                        <i class="fas fa-sign-out-alt me-2"></i>退出登录
+                    </a>
+                </nav>
+            </div>
+        </div>
+        
+        <!-- 主要内容区域 -->
+        <div class="col-lg-10 col-md-9">
+            <div class="admin-content">
+                {% block admin_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
